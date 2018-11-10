@@ -34,7 +34,7 @@ def enhancement(row):
     for i in range(0,img.shape[0],stride*2):
         for j in range(0,img.shape[1],stride*2):
             img2[i:i+stride*2, j:j+stride*2] = cv2.equalizeHist(img[i:i+stride*2, j:j+stride*2].astype(np.uint8))
-    cv2.imwrite('enhance/s_' + str(row.name.split('/')[3]), img2)
+    cv2.imwrite('process/e_' + str(row.name.split('/')[3]), img2)
 
     return img2
 

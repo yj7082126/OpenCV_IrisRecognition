@@ -101,8 +101,5 @@ def extract(row):
     res1 = process(image, filters1)
     res2 = process(image, filters2)
     
-    cv2.imwrite('feature1/s_' + row.name, res1)
-    cv2.imwrite('feature2/s_' + row.name, res2)
-    
     V = feature_vect(res1, res2, dim)
     return V

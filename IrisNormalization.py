@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 
 def normalize(row):
-
+    name = row.name
     image = row['img']
     M = 64
     N = 512
@@ -63,11 +63,7 @@ def normalize(row):
     
     polar_array = image[yo, xo]
     
-    coords = np.where((np.isnan(polar_array)))
-    polar_array2 = polar_array
-    polar_array2[coords] = 0.5
-    avg = np.sum(polar_array2) / (polar_array.shape[0] * polar_array.shape[1])
-    polar_array[coords] = avg
+    cv2.imwrite('process/n_' + str(name.split('/')[3]), polar_array)    
     
     return polar_array
 

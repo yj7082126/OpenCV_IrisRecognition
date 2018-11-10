@@ -183,50 +183,7 @@ def IrisLoc2(orig, name):
     cv2.circle(img_copy,(p_posX,p_posY),2,(255,255,255),3)    
     cv2.circle(img_copy,(s_posX,s_posY),s_radius,(255,255,255),2)
     cv2.circle(img_copy,(s_posX,s_posY),2,(255,255,255),3)    
-    
-#    i_lowY = int(s_posY - s_radius) if int(s_posY - s_radius) >= 0 else 0
-#    i_highY = int(s_posY + s_radius + 1) if int(s_posY + s_radius + 1) <= h else s_radius
-#    
-#    i_lowX = int(s_posX - s_radius) if int(s_posX - s_radius) >= 0 else 0
-#    i_highX = int(s_posX + s_radius + 1) if int(s_posX + s_radius + 1) <= w else s_radius
-#    
-#    iris = img[i_lowY:i_highY, i_lowX:i_highX]
-#   
-#    x = np.arange(0, iris.shape[0])
-#    y = np.arange(0, iris.shape[1])
-#    mask = (x[np.newaxis,:]-s_radius)**2 + (y[:,np.newaxis]-s_radius)**2 > s_radius**2
-#    iris[mask.T] = 255
-#    
-#    topvar = int(p_posY - i_lowY - p_radius)
-#    topeyelid = iris[0:topvar, :]
-#    
-#    ret,th = cv2.threshold(topeyelid, 100, 255, cv2.THRESH_BINARY)
-#    th = cv2.Canny(th, 0, ret)
-#    try:
-#        topeyelash = th.argmax(0)
-#        x = np.argwhere(topeyelash > 0).reshape(1,-1)[0]
-#        y = topeyelash[topeyelash > 0]
-#    except AttributeError:
-#        y = []
-#        
-#    if len(y) > 20:
-#        P = np.array([np.square(x), x, np.ones(len(x))])
-#        Q = np.matmul(np.linalg.inv(np.matmul(P, P.T)), np.matmul(P, y.reshape(-1,1)))
-#        
-#        x = np.arange(0, len(topeyelash), 1)
-#        y = (Q[0][0]*(x**2)+Q[1][0]*x+Q[2][0])
-#    
-#        for i, el in enumerate(y):
-#            if el > 0:
-#                cv2.circle(img_copy,(i+i_lowX,int(el)+i_lowY),1,(255,255,255),3)  
-#        
-#        cv2.imwrite('local/s_' + str(name.split('/')[3]), img_copy)
-#    
-#        for i, el in enumerate(y):
-#            if el > 0:
-#                orig[0:int(el)+i_lowY, i+i_lowX] = np.nan
-#    else:
-#        cv2.imwrite('local/s_' + str(name.split('/')[3]), img_copy)
+
     cv2.imwrite('local/s_' + str(name.split('/')[3]), img_copy)    
     return [p_posX, p_posY, p_radius, s_posX, s_posY, s_radius, orig]
 
@@ -302,49 +259,6 @@ def IrisLoc(orig, name):
     cv2.circle(img_copy,(p_posX,p_posY),2,(255,255,255),3)    
     cv2.circle(img_copy,(s_posX,s_posY),s_radius,(255,255,255),2)
     cv2.circle(img_copy,(s_posX,s_posY),2,(255,255,255),3)    
-#    
-#    i_lowY = int(s_posY - s_radius) if int(s_posY - s_radius) >= 0 else 0
-#    i_highY = int(s_posY + s_radius + 1) if int(s_posY + s_radius + 1) <= h else s_radius
-#    
-#    i_lowX = int(s_posX - s_radius) if int(s_posX - s_radius) >= 0 else 0
-#    i_highX = int(s_posX + s_radius + 1) if int(s_posX + s_radius + 1) <= w else s_radius
-#    
-#    iris = img[i_lowY:i_highY, i_lowX:i_highX]
-#   
-#    x = np.arange(0, iris.shape[0])
-#    y = np.arange(0, iris.shape[1])
-#    mask = (x[np.newaxis,:]-s_radius)**2 + (y[:,np.newaxis]-s_radius)**2 > s_radius**2
-#    iris[mask.T] = 255
-#    
-#    topvar = int(p_posY - i_lowY - p_radius)
-#    topeyelid = iris[0:topvar, :]
-#    
-#    ret,th = cv2.threshold(topeyelid, 100, 255, cv2.THRESH_BINARY)
-#    th = cv2.Canny(th, 0, ret)
-#    try:
-#        topeyelash = th.argmax(0)
-#        x = np.argwhere(topeyelash > 0).reshape(1,-1)[0]
-#        y = topeyelash[topeyelash > 0]
-#    except AttributeError:
-#        y = []
-#
-#    if len(y) > 20:
-#        P = np.array([np.square(x), x, np.ones(len(x))])
-#        Q = np.matmul(np.linalg.inv(np.matmul(P, P.T)), np.matmul(P, y.reshape(-1,1)))
-#        
-#        x = np.arange(0, len(topeyelash), 1)
-#        y = (Q[0][0]*(x**2)+Q[1][0]*x+Q[2][0])
-#    
-#        for i, el in enumerate(y):
-#            if el > 0:
-#                cv2.circle(img_copy,(i+i_lowX,int(el)+i_lowY),1,(255,255,255),3)  
-#        
-#        cv2.imwrite('local/s_' + str(name.split('/')[3]), img_copy)
-#    
-#        for i, el in enumerate(y):
-#            if el > 0:
-#                orig[0:int(el)+i_lowY, i+i_lowX] = np.nan
-#    else:
-#        cv2.imwrite('local/s_' + str(name.split('/')[3]), img_copy)
-    cv2.imwrite('local/s_' + str(name.split('/')[3]), img_copy)        
+
+    cv2.imwrite('process/l_' + str(name.split('/')[3]), img_copy)        
     return [p_posX, p_posY, p_radius, s_posX, s_posY, s_radius, orig]
