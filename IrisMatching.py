@@ -23,7 +23,6 @@ def match(x_train, y_train, x_test, y_test, reduction, n_comp=120):
         x_train_red = x_train
         x_test_red = x_test
 
-    #(x_train - np.mean(x_train, axis=0))/ np.std(x_train, axis=0)
     [n1,m1] = x_train_red.shape
     [n2,m2] = x_test_red.shape
     [n, m] = x_train.shape
@@ -33,7 +32,6 @@ def match(x_train, y_train, x_test, y_test, reduction, n_comp=120):
     
     for i in range(l):
         group = x_train_red[list(np.where(y_train==i+1)),:][0]
-        #no_group = group.shape
         fi[i,:]=(np.mean(group, axis=0))
     
     if reduction:
@@ -48,11 +46,8 @@ def match(x_train, y_train, x_test, y_test, reduction, n_comp=120):
     pred_y = np.zeros((n2, 3))
     for i in range(n2):
         for j in range(l):
-            #manhattan distance
             d1[i,j] = sum(abs((x_test_red[i,:]-fi[j,:])))
-            #Euclidean distance
-            d2[i,j] = sum((x_test_red[i,:]-fi[j,:])**2); 
-            #cosine similarity distance             
+            d2[i,j] = sum((x_test_red[i,:]-fi[j,:])**2);              
             d3[i,j] = 1-(np.dot(x_test_red[i,:].T, fi[j,:]))/(np.linalg.norm(x_test_red[i,:])*np.linalg.norm(fi[j,:]))
          
         values_y[i, 0] = np.min(d1[i,:])
@@ -64,8 +59,4 @@ def match(x_train, y_train, x_test, y_test, reduction, n_comp=120):
         
     return values_y, pred_y
 
-#%%
-#def metrics(value, prediction, thresh):
-#    for i in range(len(value)):
-#        if valu
         

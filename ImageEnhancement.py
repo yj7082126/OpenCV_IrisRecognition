@@ -5,7 +5,6 @@ Created on Sun Nov  4 12:35:42 2018
 @author: user
 """
 
-from skimage.measure import block_reduce
 import numpy as np
 import cv2
 
@@ -14,8 +13,7 @@ def enhancement(row):
     img = row['Image']
     dim = img.shape
     
-    stride = 16
-#    
+    stride = 16  
     initialize_img = np.zeros((int(dim[0]/stride), int(dim[1]/stride)))
     
     for i in range(0,dim[0]-15,stride):
@@ -37,4 +35,7 @@ def enhancement(row):
     cv2.imwrite('process/e_' + str(row.name.split('/')[3]), img2)
 
     return img2
+
+#%%
+
 

@@ -1,6 +1,7 @@
 # OpenCV_IrisRecognition
 
-GR5293 Group Project (Patrick Kwon, Lingyi Zhao, Liangchen Xing)
+Image Analysis Group Project (Patrick Kwon, Lingyi Zhao, Liangchen Xing)
+Influenced by: https://www.researchgate.net/publication/229007521_A_new_accurate_technique_for_Iris_boundary_detection. 
 
 ### IrisRecognition.py: (main function)
 
@@ -27,138 +28,271 @@ So it will gives output such that:
 Similarly, we store the image from second 'second-level subfolder' into test_image.
 Because in each subfolder, we have 4 training picture, therefore, we use 'for trial in list(range(1, 5))] for x in testNames'.
 
+
 ### IrisLocalization.py: 
 Here we use 8 separate functions for localization part.
 
-A)	function： projection
+Global Variables:
+* k1 = 5 is the kernel size for first bilateral filter (pupil identification)
+* k2 = 13 is the kernel size for first bilateral filter (iris identification)
+* window = 60 is the size of window for subsetting image (120 * 120)
+* thresh1 = 80 is the binary image thresholding value for pupil
+* thresh2 = 155 is the binary image thresholding value for iris (155, 170)
+* scope1 = 1.6 is the lower boundary for iris radius size in respect to pupil radius
+* scope2 = 3.6 is the Upper boundary for iris radius size in respect to iris radius
+* hough_list = [[20, 20], [15, 15], [10, 10], [5, 5]]  is the hough  variables for hough circles
 
-1)	Logic explain:
-Projection: horizontal and vertical projection of image. The projection function is build for 
-project all pixel values to a vertical line and horizontal line separately, and then sum them up 
-separately. It takes 'img' as the argument for this function. It will be used in localization function. The 
-projection process will be implemented by summing the row pixel values and column pixel 
-values. The first for loop will be used to sum the row pixel values for the image and stores in 'sumRows' 
-list. The second for loop will be used to sum the column pixel values for the image and stores in 
-'sumCols' list.
-# Ignore the pixels in boundary of image (width: half of window (30)) for better approximation.
+1. projection
 
-2)	Parameter explain:
+	1.	Logic:
+	Projection: horizontal and vertical projection of image. The projection function is build for project all pixel values to a vertical line and horizontal line separately, and then sum them up separately. It takes 'img' as the argument for this function. It will be used in localization function. The projection process will be implemented by summing the row pixel values and column pixel values. The first for loop will be used to sum the row pixel values for the image and stores in 'sumRows' ist. The second for loop will be used to sum the column pixel values for the image and stores in 'sumCols' list.
+	We also ignore the pixels in boundary of image (width: half of window (30)) for better approximation.
 
-k1 = 5 is the kernel size for first bilateral filter (pupil identification)
-k2 = 13 is the kernel size for first bilateral filter (iris identification)
-window = 60 is the size of window for subsetting image (120 * 120)
-thresh1 = 80 is the Binary image thresholding value for pupil
-thresh2 = 155 is the Binary image thresholding value for iris (155, 170)
-scope1 = 1.6 is the Lower boundary for iris radius size in respect to pupil radius
-scope2 = 3.6 is the Upper boundary for iris radius size in respect to iris radius
-hough_list = [[20, 20], [15, 15], [10, 10], [5, 5]]  is the hough variables for hough circles
+	2. Parameters:
+	* The 'img' is the input image array.
+	
+2. subsetting
 
-B)	function 'subsetting':
+	1. Logic:
+	This 'subsetting' function takes 'img','posX','posY',and 'window' as its arguments. It will outputs a subset image, based on the position of pupil.
 
-1)	Logic explain:
-This 'subsetting' function takes 'img','posX','posY',and 'window' as its arguments.
-It will outputs a subset image, based on the position of pupil.
+	2. Parameter :
+	* The 'img' is the input image array.
+	* The 'posX' and 'poxY' are the coordinate of pupil center. 
+	* The 'window' is the window size. (global variable)
 
-2)	Parameter explain:
-The 'img' is the input image array.
-The 'posX' and 'poxY' are the coordinate of pupil center. 
-The 'window' is the a window size.
-Based on the corrdinate of pupil's center, 'window' will helps us to construct a sub-picture that 
-covers the center of pupil.
+3. thresholding
 
-C)	function 'thresholding':
+	1. Logic: 
+	The function 'thresholding' will be used to output the coordinate of pupils center. It takes 'orig', 'posX', 'posY', 'window', 'otsu=True', 'thresh=150' as its function arguments.
 
-1)	Logic explain:
-The function 'thresholding' will be used to output the coordinate of pupils center. It takes 'orig', 
-'posX', 'posY', 'window', 'otsu=True', 'thresh=150' as its function arguments.
+	2. Parameter:
+	* The 'orig' is the input of image array. 
+	* The 'posX' and 'posY' are the coordinate of pupil center, which will be generated by 'projection' function in the following code.
+	* The 'window' is the argument that will be used in the 'subsetting' function. 
+	* 'otsu = True' is the condition parameter. If it is true, then we will use 'cv2.THRESH_BINARY_INV' plus 'cv2.THRESH_OTSU' method in 'cv2.threshold' function. Otherwise, we only use 'cv2.THRESH_BINARY_INV'.
+	* The 'thresh = 150' is the parameter that used to binarize image base on thresholding and getting center of pupil from moments. This function will use cv.moment method to generate more accurate corrdinate for the pupil center.
 
-2)	Parameter explain:
-The 'orig' is the input of image array. 
-The 'posX' and 'posY' are the coordinate of pupil center, which will be generated by 'projection' 
-function in the following code.
-The 'window' is the argument that will be used in the 'subsetting' function. We explain this 
-parameter in subsetting function above.
-'otsu = True' is the condition parameter. If it is true, then we will use 'cv2.THRESH_BINARY_INV' 
-plus 'cv2.THRESH_OTSU' method in 'cv2.threshold' function. Otherwise, we only use 
-'cv2.THRESH_BINARY_INV'.
-The 'thresh = 150' is the parameter that used to binarize image base on thresholding and 
-getting center of pupil from moments. 
-This function will use cv.moment method to generate more accurate corrdinate for the pupil 
-center.
+4. boundary
 
-D)	Function ‘boundary’:
+	1. Logic:
+	This 'boundary' function will decide whether the iris center is inside pupil or not. 
+	If the iris center is inside the pupil, it returns True. Otherwise, False.
 
-1)	Logic explain: 
-This 'boundary' function will decide whether the iris center is inside pupil or not. 
-If the iris center is inside the pupil, it returns True. Otherwise, False.
+	2. Parameter: 
+	* x1,y1 are the coordinate of pupil center, and x2,y2 are the doorinate of iris center. 
+	* This will be used in the 'circle_detectX' function in order to find the pupil.
 
-2)	Parameter explain: 
-It takes 'x1', 'x2', 'y1', 'y2', and 'r' as its arguments.
-x1,y1 are the coordinate of pupil center, and x2,y2 are the doorinate of iris center. 
-It will be used in the 'circle_detectX' function in order to find the pupil.
+5. circle_detect
 
-E)	function 'circle_detect(edges, dp = 20, minR = 20, maxR = 0)':
+	1. Logic: 
+	This function 'circle_detect' will be used to find the pupil.
 
-1)	Logic explain: 
-This function 'circle_detect(edges, dp = 20, minR = 20, maxR = 0)' will be used to find the pupil.
+	2. Parameter explain: 
+	* It takes 'edges', 'dp', 'minR', 'maxR' as its four arguments. 
+	The 'edge' is the input of image that possibly will be used by 'cv2.HoughCircles'. 
+	* Based on the gradient information,  'cv2.HoughCircles' will draw circles. In our following code, 'edge' is generally used after canny Opeartor. It will be used in 'IrisLoc2' function helping to draw the pupil boundary.
 
-2)	Parameter explain: 
-It takes 'edges', 'dp', 'minR', 'maxR' as its four arguments. 
-The 'edge' is the input of image that possibly will be used by 'cv2.HoughCircles'. Based on the 
-gradient information,  'cv2.HoughCircles' will draw circles. In our following code, 'edge' is 
-generally used after canny Opeartor.
-It will be used in 'IrisLoc2' function helping to draw the pupil boundary.
+6. circle_detectX
 
-F)	Function 'circle_detectX':
+	1. Logic:
+	This 'circle_detectX' function is an alternate version of circle_detect, and it also uses houghcircles and boundary to find the iris. It takes 'edges', 'dp', 'posX', 'posY', 'radius', 'minR = 20', 'maxR = 0' as its arguments.
 
-1)	Logic explain:
-This 'circle_detectX' function is an alternate version of circle_detect, and it also uses houghcircles and boundary to find the iris.
-It takes 'edges', 'dp', 'posX', 'posY', 'radius', 'minR = 20', 'maxR = 0' as its arguments.
+	2. Parameter:
+	* edges are the image array that has been filtered by canny Opeartor. 
+	* The 'posX' and 'posY' are the coordinate of pupil center.
+	* The 'radius' is the pupil radius.
+	* we set 'minR = 20' for minimum pupil radius, and 'maxR = 0' for minimum pupil radius.
+	* The variable hough_list will also be used in the function.
+		* We set index i = 0, and set while loop for generating the pupil's circle. The hough_list will be applied inside this while loop. The loop will try all the element from hough_list and use 'cv2.HoughCircles' to generate circles until circles' length is greater than one. 
 
-2)	Parameter explain:
-edges are the image array that has been filtered by canny Opeartor. 
-The 'posX' and 'posY' are the coordinate of pupil center.
-the 'radius' is the pupil radius.
-we set 'minR = 20' for minimum pupil radius, and 'maxR = 0' for minimum pupil radius.
+7. IrisLoc2:
 
-In the very beginning, we have asserted that:
-hough_list = [[20, 20], [15, 15], [10, 10], [5, 5]] #hough variables for hough circles
-This will be used in 'circle_detectX' function.
-we set index i = 0, and set while loop for generating the pupil's circle. The hough_list will be 
-applied inside this while loop. the loop will try all the element from hough_list and use 
-'cv2.HoughCircles' to generate circles until circles' length is greater than one. 
+	1. Logic: 
+	IrisLoc2 is a funtion that combines all the previous functions. It takes two arguments: 'orig' and 'name'. This function generates the coordinate of pupil's center and pupil radius first, and then generates the coordinate of iris and radius. For generating pupil's center coordinate and radius, it applies 'cv2.filter2D' to filter the original image first. And then it generates thresholding image. After that, it applies Canny Operator then HoughCircles in order to generate the circle. For generating iris' center coordinate and radius, it binarized the filtered iamge first. Then it applies 'Canny operator' to generate the edge of the image, and uses 'circle_detectX' function to generates the circle of iris.
 
-G)	Function ’IrisLoc2(orig, name)‘:
+	2. Parameter: 
+	* 'orig' is the input for image array. 
+	* 'name' is the string for image file's name.
 
-1)	Logic explain: 
-’IrisLoc2(orig, name)‘ is a funtion that combines all the previous functions.
-it takes two arguments: 'orig' and 'name'. This function generates the coordinate of pupil's 
-center and pupil radius first, and then generates the coordinate of iris and radius. For generating 
-pupil's center coordinate and radius, it applies 'cv2.filter2D' to filter the original image first. And 
-then generte thresholding image. After that, it applied Canny Operator then HoughCircles in 
-order to generate the circle. For generating iris' center coordinate and radius, it binarized the 
-filtered iamge first. Then it applies 'Canny operator' to generate the edge of the image, and 
-uses'circle_detectX' function to generates the circle of iris.
+8. localize
 
-2)	Parameter explain: 
-'orig' is the input for image array. 
-'name' is the string for image file's name.
+	1. Logic: 
+	IrisLoc(orig, name) generates the coordinate of center of pupil, radius of pupil, center of iris and radius of iris respectively. This function combines all the functions we defined before. It initially genearates coordinate for pupil's center and radius, then generates coordinate for iris center and radius. Specifically, it applied 'projection' function first, then find approximate pupil coordinates. After that, it applies 'thresholding' function to binarize the image. 
+	After that, we apply "Canny Operator" and "circle_detect" functions to generate the coordinate of pupil's center and radius of pupil. Then, we apply biliteral 2-D linear filter to the orginal image. 
+	Again, we apply 'cv2.threshold', 'Canny Operator', and 'circle_detectX' to the filtered image array, just like we did in the 'IrisLoc2' function. And we did set 'typeError' exeption. If we cannot generate either pupils' center and radius or iris' center and radius, we will then turn to use IrisLoc2 function.  
 
-H)	function 'IrisLoc(orig, name)':
+	2. Parameter: 
+	* 'orig' is the input for image array. 
+	* 'name' is the string for image file's name.
 
-1)	Logic explain: 
-This function 'IrisLoc(orig, name)' is for generating the coordinate of center of pupil, radius of 
-pupil, center of iris and radius of iris respectively. This function combines all the functions we 
-defined before. It initially genearates coordinate for pupil's center and radius, then generates 
-coordinate for iris center and radius. Specifically, it applied 'projection' function first, then find 
-approximate pupil coordinates. After that, it applies 'thresholding' function to binarize the image. 
-After that, we apply "Canny Operator" and "circle_detect" functions to generate the coordinate 
-of pupil's center and radius of pupil. Then, we apply biliteral 2-D linear filter to the orginal image. 
-Again, we apply 'cv2.threshold', 'Canny Operator', and 'circle_detectX' to the filtered image array, 
-just like we did in the 'IrisLoc2' function. And we did set 'typeError' exeption. If we cannot 
-generate either pupils' center and radius or iris' center and radius, we will then turn to use 
-IrisLoc2 function.  
 
-2)	Parameter explain: 
-'orig' is the input for image array. 
-'name' is the string for image file's name.
+
+### IrisNormalization.py: 
+Here we use function normalize(row). 
+
+1. normalize
+	1. Logic: 
+	For the purpose of achieving more accurate recognition results, it’s necessary to compensate for the iris deformation. We use Daugman rubber sheet model to project the original iris in a Cartesian coordinate system into dimensionless pseudopolar coordinate systems. 
+	For this part, we got our ideas from the following document: https://www.researchgate.net/publication/229007521_A_new_accurate_technique_for_Iris_boundary_detection. (page 659) This counters the issue of the pupil being non-concentric to the iris, by using a remapping formula based on the difference between the centers of pupil and iris to rescale points. The variables diffX, diffY, phi, sgn, a, b, and r are all structured according to this document. 
+	The program then follows an normal Daugman rubber sheet model, as we map original iris from Cartesian coordinate system to pseudopolar coordinate. We then counterclockwise unwrap the iris ring to a rectangular block with the fixed size. In this part, normalization not only reduces to a certain extent the iris distortion caused by pupil movement but also simplified subsequent processing.
+
+	2. Parameters: 
+	* diffX, diffY, phi, sgn, a, b, r: explained in the referenced document above.
+	* row: It’s a dictionary in Python. It includes image called ‘image’, xy-coordinate of circle defining the pupil boundry called ‘p_posX’and ‘p_posY’and xy-coordinate of circle defining the iris boundry called ‘i_posX’and ‘i_posY’, pupil radius called ‘p_radius’and iris radius called ‘i_radius’. All of them we get from IrisLocalization part. 
+	* polar_array: Normalized form of the iris region
+	* M and N: M=64 and N=512. This means the size of the new image is 64*512
+	* ox and oy: Calculate displacement of pupil center from the iris center
+	* r: Calculate radius around the iris as a function of the angle
+	* rmat: Exclude values at the boundary of the pupil and iris border since this is not iris region and will produce noise for the following parts
+	* xcosmat and xsinmat: Calulate caresian location of each data point around circular iris region
+	* xo and yo: Cartesian coordinate of data points
+	
+	
+### ImageEnhancement.py: 
+Here we use function enhancement(row).
+
+1. enhancement
+	1. Logic: 
+	First, it defined a 16 by 16 mean filter to average the normalized function. By bicubic interpolation after mean filter, it will generate the invariant illumination background. After that, we remove the illumination background from the normalized image and generate the enhanced image array. Finally, we use 32 by 32 window to equalized the histogram of the enhanced picture in order to improve the enhanced image quality.
+	The first for loop is for mean filter. The second for loop is for 32 by 32 window equalization.
+
+	
+### FeatureExtraction.py: 
+Here we use 5 different functions for this part. They are def_filter(size, sigma, theta, freq, gamma), build_filters(ksize, sigma, freq, gamma), process(img, filters), feature_vect(res1, res2, dim) and extract(row). 
+
+1. def_filter
+	1. Logic:
+	Create filters according to the paper mentioned previously.
+	
+	2. Parameter:
+	* sigma_x and sigma_y: they are the space constants of the Gaussian envelope along the x and y axis
+	* size: kernel size
+	* theta: the orientation of Gabor filter
+	* fre: the frequency of the sinusoidal function
+	* M0: Gabor filter
+	* M1: Defined filter
+	* gb: filter returned
+	
+2. build_filters
+	1. Logic: 
+	Applied function on function def_filter above for an arrange of theta. The for loop here is to applied def_filter in the range from 0 to pi, step by pi/16 
+
+	2. Parameter: 
+	* sigma_x and sigma_y: they are the space constants of the Gaussian envelope along the x and y axis
+	* ksize: kernel size
+	* theta: the orientation of Gabor filter
+	* fre: the frequency of the sinusoidal function
+	* filters: an list of filters for different orientation of Gabor filter
+	
+3. process
+	1. Logic: 
+	This function convolve two 2-dimensional arrays. The for loop here is to applied two arrays called “img” and “kern” in filters (we get from function above). The output has the same size with “img”
+
+	2. Parameter: 
+	* img: the array of img
+	* filters: an list of filters for different orientation of Gabor filter. We get it from function built_filters
+	* accum: arrays after conv2
+	
+4. feature_vect
+	1. Logic: 
+	This function is the algorithm to get feature vector (1*1536 size). In this function, we have 4 for loops. The 2 for loops are to combine mean m and average absolute deviation sigma together. 
+	And other 2 for loops are calculate mean absolute deviation for each region. 
+
+	2. Parameter: 
+	* res1: the first filtered image
+	* res2: the second filtered image
+	* dim: break image into what size
+	* sizeX and sizeY: the size of res1 (first filtered image) 
+	* patches1: break image1 into 8*8
+	* patches2: break image2 into 8*8
+	* mean1 and mean2: calculate absolute mean for each region
+	* sigma1 and sigma2: calculate mean absolute deviation for each region
+	* V: append mean and sigma together
+	
+5. extract:
+	1. Logic: 
+	This function is to combine all separate functions together and do feature extraction.  
+
+	2. Parameter: 
+	* row: this is a dictionary in Python. It concludes Image called ‘image’
+	* filter1: Using build_filters function and get an list of filters for different orientation of filter by using sigma1 and gamma1
+	* filter2: Using build_filters function and get an list of filters for different orientation of filter by using sigma2 and gamma2
+	* res1: this is array1 after conv2
+	* res2: this is array2 after conv2
+	* V: getting feature vector (1*1536) through function feature_vect
+	
+
+### IrisMatching.py: 
+Here we use function match(x_train, y_train, x_test, y_test, reduction, n_comp=120) in matching part. 
+
+1. matching
+	1. Logic: 
+	For feature reduction, we used PCA+LDA here. The original dimension of each data is 1536 length and we have 108*3=324 training data. Thus, we both use PCA and LDA to reduce dimensions of train and test data. After reduction, we calculate the mean vector for each class and  d1, d2 and d3 for test data and mean vector. We them classify the vectors to the class of minimum distance. 
+	
+	2. Parameter:
+	* X_train: train feature vector of image
+	* Y_train: labels of train image
+	* X_test: test feature vector of image
+	* Y-test: labels of test image
+	* reduction: TRUE or FALSE. If true, we will use PCA+LDA for feature reduction. 
+	* n1, m1, n2, m2, n, m: the size of image. They are numbers
+	* fi: mean vectors
+	* d1: manhanttan distance calculation 
+	* d2: Euclidean distance calculation
+	* d3: Cosine similarity distance calculation
+	* pred_y: the prediction of y 
+
+	
+### PerformanceEvaluation.py:
+Here we use several functions for performance evaluation. 
+
+1. evaluation
+	1. Logic: 
+	* This function will give us the evaluation of accuracy for our prediction y and test y. 
+
+	2. Parameter: 
+	* l1: prediction of y 
+	* l2: test y
+
+2. create_table
+	1. Logic:
+	This function will create a table for the last evaluation part. It shows the accuracy of original features and PCA+LDA features. Each accuracy is rounded.
+
+	2. Parameter:
+	* y_pred_d0: this is the prediction of y under original features;
+	* y_pred_d: this is the prediction of y under reduced PCA+LDA features
+	* y_test: this is the labels of test y
+
+3. dimension_plot
+	1. Logic: 
+	This is the function to plot CRR under different dimensions. The number of components are up to 10 to 140.
+
+	2. Parameter: 
+	* dimension: this is the dimensionality of feature vector
+	* rates: this is correct recognition rate
+ 
+4. falsematch
+	1. Logic: 
+	Find False match rate, false non-match rate, true match rate and true non-match rate. If the values can't be formed due to zero division, the function outputs zero.
+
+	2. Parameter: 
+	* val: the values we get from matching part. 
+	* pred: the prediction we get from matching part. 
+	* thresh: thresholds
+
+5. create_table2
+	1. Logic:
+	This function will print a table about false match/false non match based on different thresholds.
+
+	2. Parameters:
+	* val_d: the values(distance matrix) we get from matching part.
+	* y_pred_d: the prediction we get from matching part. 
+
+6. fp_plot
+1. Logic: 
+	It shows a image of false match and false non-match. x-coordinate is false positive and y-coordinate is false non-match. 
+2. Parameters:
+	* val_d: the values(distance matrix) we get from matching part.
+	* pred_d: the prediction we get from matching part. 
+

@@ -7,7 +7,6 @@ Created on Sun Nov  4 12:49:30 2018
 
 import numpy as np
 import itertools
-import cv2
 from scipy.signal import convolve2d
 
 #%%
@@ -89,14 +88,8 @@ def extract(row):
     image = row['Image']
     image = image[:region,]
     
-    #filters1 = def_filter(ksize, sigma1, 0, gamma1/sigma1, gamma1)
-    #filters2 = def_filter(ksize, sigma2, 0, gamma2/sigma2, gamma2)
-    
     filters1 = build_filters(ksize, sigma1, gamma1/sigma1, gamma1)
     filters2 = build_filters(ksize, sigma2, gamma2/sigma2, gamma2)
-    
-    #res1 = convolve2d(image, filters1, 'same')
-    #res2 = convolve2d(image, filters2, 'same')
     
     res1 = process(image, filters1)
     res2 = process(image, filters2)
